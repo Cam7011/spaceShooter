@@ -79,7 +79,7 @@ def main_menu():
                 quit() 
         else:
             draw_text(screen, "Press [ENTER] To Begin", 30, WIDTH/2, HEIGHT/2)
-            draw_text(screen, "or [Q] To Quit", 30, WIDTH/2, (HEIGHT/2)+40)
+            draw_text(screen, "or [Q] To Quit", 30, WIDTH/2, (HEIGHT/2)+40)     
             pygame.display.update()
 
     #pygame.mixer.music.stop()
@@ -431,6 +431,23 @@ player_die_sound = pygame.mixer.Sound(path.join(sound_folder, 'rumble1.ogg'))
 # TypeError: play() takes no keyword arguments
 #pygame.mixer.music.play()
 
+#################################
+
+def save_highscore(score):
+    highScoreFile = "highScore.txt"
+    try:
+        with open(highScoreFile, 'a+') as saveFile:
+            oldScore = saveFile.read()
+            if(oldScore):
+                oldScore = int(oldScore)
+                if(oldScore > score):
+                    return
+        with open(highScoreFile, 'w') as saveFile:
+            saveFile.write(str(score))
+    except Exception as e:
+        print("Failed to save score. Message:", e)
+
+
 #############################
 ## Game loop
 running = True
@@ -538,6 +555,7 @@ while running:
 
     ## if player died and the explosion has finished, end game
     if player.lives == 0 and not death_explosion.alive():
+        save_highscore(score)
         running = False
         # menu_display = True
         # pygame.display.update()
