@@ -40,6 +40,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
+
+HIGH_SCORE_FILE = "highScore.txt"
 ###############################
 
 ###############################
@@ -59,6 +61,7 @@ def main_menu():
 
     menu_song = pygame.mixer.music.load(path.join(sound_folder, "menu.ogg"))
     pygame.mixer.music.play(-1)
+    highScore = str(get_highscore(HIGH_SCORE_FILE))
 
     title = pygame.image.load(path.join(img_dir, "main.png")).convert()
     title = pygame.transform.scale(title, (WIDTH, HEIGHT), screen)
@@ -79,7 +82,8 @@ def main_menu():
                 quit() 
         else:
             draw_text(screen, "Press [ENTER] To Begin", 30, WIDTH/2, HEIGHT/2)
-            draw_text(screen, "or [Q] To Quit", 30, WIDTH/2, (HEIGHT/2)+40)     
+            draw_text(screen, "or [Q] To Quit", 30, WIDTH/2, (HEIGHT/2)+40)
+            draw_text(screen, "Highscore: " + highScore, 30, WIDTH/2, HEIGHT-35)
             pygame.display.update()
 
     #pygame.mixer.music.stop()
@@ -433,16 +437,19 @@ player_die_sound = pygame.mixer.Sound(path.join(sound_folder, 'rumble1.ogg'))
 
 #################################
 
-def save_highscore(score):
-    highScoreFile = "highScore.txt"
+def get_highscore(highScoreFile):
+    with open(highScoreFile, 'a+') as saveFile:
+        highScore = saveFile.read()
+        if(highScore):
+            return int(highScore)
+        return 0
+
+def save_highscore(score, file):
     try:
-        with open(highScoreFile, 'a+') as saveFile:
-            oldScore = saveFile.read()
-            if(oldScore):
-                oldScore = int(oldScore)
-                if(oldScore > score):
-                    return
-        with open(highScoreFile, 'w') as saveFile:
+        oldScore = get_highscore(file)
+        if(oldScore > score):
+            return
+        with open(file, 'w') as saveFile:
             saveFile.write(str(score))
     except Exception as e:
         print("Failed to save score. Message:", e)
@@ -452,6 +459,7 @@ def save_highscore(score):
 ## Game loop
 running = True
 menu_display = True
+
 while running:
     if menu_display:
         main_menu()
@@ -555,7 +563,7 @@ while running:
 
     ## if player died and the explosion has finished, end game
     if player.lives == 0 and not death_explosion.alive():
-        save_highscore(score)
+        save_highscore(score, HIGH_SCORE_FILE)
         running = False
         # menu_display = True
         # pygame.display.update()
